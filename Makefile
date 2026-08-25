@@ -11,6 +11,7 @@ COMPOSE := docker compose
 
 WEB_IMAGE := my-app-web
 API_IMAGE := my-app-api
+AIR_BIN := $(shell go env GOPATH)/bin/air
 
 
 # ------------------------------------------------------------------------------
@@ -27,9 +28,13 @@ dev:
 dev-web:
 	pnpm --filter frontend dev
 
+.PHONY: install-air
+install-air:
+	@if [ ! -x "$(AIR_BIN)" ]; then go install github.com/air-verse/air@latest; fi
+
 .PHONY: dev-api
-dev-api:
-	cd $(API_DIR) && go run ./cmd/server
+dev-api: install-air
+	cd $(API_DIR) && $(AIR_BIN) -c .air.toml
 
 
 # ------------------------------------------------------------------------------
@@ -40,6 +45,7 @@ dev-api:
 install:
 	pnpm install
 	cd $(API_DIR) && go mod download
+	go install github.com/air-verse/air@latest
 
 .PHONY: update
 update:
